@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Matematika: Bilangan Cacah sampai 100.000</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .bounce-short {
+            animation: bounce 0.4s ease infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-6px); }
+        }
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 bg-slate-50 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl font-black">
+                    🔢
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight leading-tight">Kuis Bilangan Cacah</h1>
+                    <p class="text-xs text-indigo-100 font-medium">Hingga 100.000 • Tanpa Batas</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Stats -->
+            <div class="flex items-center gap-2 bg-black/20 p-1.5 rounded-2xl backdrop-blur-md text-xs md:text-sm font-semibold">
+                <div class="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 text-amber-200 rounded-xl">
+                    <span>🔥 Streak:</span>
+                    <span id="headerStreak" class="font-extrabold text-amber-300 text-base">0</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-xl">
+                    <span>⭐ Skor:</span>
+                    <span id="headerScore" class="font-extrabold text-emerald-300 text-base">0</span>
+                </div>
+                <button id="soundToggleBtn" onclick="toggleSound()" class="p-2 hover:bg-white/10 rounded-xl transition-all text-lg" title="Matikan/Hidupkan Suara">
+                    🔊
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-6 w-full flex-1 flex flex-col gap-6">
+
+        <!-- Category Selector Bar -->
+        <section class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-1.5">
+            <button onclick="selectCategory('all')" id="cat-all" class="cat-btn flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-center bg-indigo-600 text-white shadow-md">
+                🎲 Campuran
+            </button>
+            <button onclick="selectCategory('reading')" id="cat-reading" class="cat-btn flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-center text-slate-600 hover:bg-slate-100">
+                📖 Membaca Bilangan
+            </button>
+            <button onclick="selectCategory('place_value')" id="cat-place_value" class="cat-btn flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-center text-slate-600 hover:bg-slate-100">
+                🎯 Nilai Tempat & Angka
+            </button>
+            <button onclick="selectCategory('decomposition')" id="cat-decomposition" class="cat-btn flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold transition-all text-center text-slate-600 hover:bg-slate-100">
+                🧩 Dekomposisi
+            </button>
+        </section>
+
+        <!-- Quiz Card Container -->
+        <section class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden relative pop-in">
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 h-2">
+                <div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 transition-all duration-500 rounded-r-full" style="width: 0%"></div>
+            </div>
+
+            <div class="p-6 md:p-8 flex flex-col gap-6">
+                <!-- Question Header / Metadata -->
+                <div class="flex items-center justify-between gap-4">
+                    <span id="questionCategoryBadge" class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        Kategori Soal
+                    </span>
+                    <span id="questionNumber" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Soal #1
+                    </span>
+                </div>
+
+                <!-- Question Prompt -->
+                <div class="space-y-3">
+                    <h2 id="questionPrompt" class="text-lg md:text-2xl font-bold text-slate-800 leading-relaxed">
+                        Memuat soal...
+                    </h2>
+                    <!-- Target Highlight Box (for numbers or specific focus) -->
+                    <div id="targetDisplay" class="bg-indigo-50/70 border-2 border-indigo-200/80 rounded-2xl p-4 md:p-6 text-center text-2xl md:text-4xl font-extrabold tracking-wide text-indigo-900 shadow-inner">
+                        -
+                    </div>
+                </div>
+
+                <!-- Options Grid -->
+                <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
+                    <!-- Options buttons inserted dynamically -->
+                </div>
+
+                <!-- Explanation / Feedback Drawer (Initially Hidden) -->
+                <div id="feedbackBox" class="hidden p-5 rounded-2xl border transition-all duration-300">
+                    <div class="flex items-start gap-3">
+                        <div id="feedbackIcon" class="text-2xl mt-0.5"></div>
+                        <div class="space-y-1">
+                            <h4 id="feedbackTitle" class="font-bold text-base"></h4>
+                            <p id="feedbackText" class="text-sm text-slate-600 leading-relaxed"></p>
+                        </div>
+                    </div>
+                    <button id="nextBtn" onclick="generateQuestion()" class="mt-4 w-full py-3 px-6 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                        <span>Soal Berikutnya</span>
+                        <span>➔</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats & Achievements Dashboard -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Accuracy Stats -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-emerald-100 text-emerald-600 rounded-2xl text-2xl">📊</div>
+                <div>
+                    <div class="text-xs text-slate-500 font-medium">Akurasi Jawaban</div>
+                    <div class="text-xl font-bold text-slate-800"><span id="statAccuracy">0</span>%</div>
+                    <div class="text-xs text-slate-400 mt-0.5"><span id="statCorrect">0</span> benar dari <span id="statTotal">0</span> soal</div>
+                </div>
+            </div>
+
+            <!-- Best Streak -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-amber-100 text-amber-600 rounded-2xl text-2xl">🏆</div>
+                <div>
+                    <div class="text-xs text-slate-500 font-medium">Streak Tertinggi</div>
+                    <div class="text-xl font-bold text-slate-800"><span id="statBestStreak">0</span> Beruntun</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Pertahankan konsistensimu!</div>
+                </div>
+            </div>
+
+            <!-- Badge Unlocked Status -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-indigo-100 text-indigo-600 rounded-2xl text-2xl">🏅</div>
+                <div>
+                    <div class="text-xs text-slate-500 font-medium">Gelar Belajar</div>
+                    <div id="userBadge" class="text-sm font-bold text-indigo-600">Pemula Matematika</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Tingkatkan skor untuk piala baru</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Place Value Quick Reference Cheat Sheet -->
+        <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <span>💡</span> Panduan Nilai Tempat Bilangan (Sampai 100.000)
+            </h3>
+            <div class="grid grid-cols-5 gap-1.5 text-center text-xs md:text-sm font-medium">
+                <div class="bg-purple-50 border border-purple-200 p-2 rounded-xl">
+                    <div class="font-bold text-purple-700">7</div>
+                    <div class="text-[10px] md:text-xs text-purple-600 font-semibold mt-1">Puluh Ribuan</div>
+                    <div class="text-[9px] text-slate-400">70.000</div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 p-2 rounded-xl">
+                    <div class="font-bold text-blue-700">4</div>
+                    <div class="text-[10px] md:text-xs text-blue-600 font-semibold mt-1">Ribuan</div>
+                    <div class="text-[9px] text-slate-400">4.000</div>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
+                    <div class="font-bold text-emerald-700">2</div>
+                    <div class="text-[10px] md:text-xs text-emerald-600 font-semibold mt-1">Ratusan</div>
+                    <div class="text-[9px] text-slate-400">200</div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 p-2 rounded-xl">
+                    <div class="font-bold text-amber-700">8</div>
+                    <div class="text-[10px] md:text-xs text-amber-600 font-semibold mt-1">Puluhan</div>
+                    <div class="text-[9px] text-slate-400">80</div>
+                </div>
+                <div class="bg-rose-50 border border-rose-200 p-2 rounded-xl">
+                    <div class="font-bold text-rose-700">5</div>
+                    <div class="text-[10px] md:text-xs text-rose-600 font-semibold mt-1">Satuan</div>
+                    <div class="text-[9px] text-slate-400">5</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>Kuis Matematika Interaktif Bilangan Cacah • Media Pembelajaran Mandiri</p>
+    </footer>
+
+    <!-- Canvas for particle confetti -->
+    <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <script>
+        // --- State Management ---
+        let currentCategory = 'all';
+        let score = 0;
+        let streak = 0;
+        let bestStreak = 0;
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        let currentQuestionObj = null;
+        let soundEnabled = true;
+
+        // Web Audio API Audio Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now); // A3
+                osc.frequency.exponentialRampToValueAtTime(130.81, now + 0.2); // C3
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggleBtn').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // --- Indonesian Number-to-Words Converter (Terbilang) ---
+        function terbilang(n) {
+            if (n === 0) return "Nol";
+            const units = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+            
+            if (n < 12) return units[n];
+            if (n < 20) return terbilang(n - 10) + " belas";
+            if (n < 100) return terbilang(Math.floor(n / 10)) + " puluh" + (n % 10 !== 0 ? " " + terbilang(n % 10) : "");
+            if (n < 200) return "seratus" + (n % 100 !== 0 ? " " + terbilang(n % 100) : "");
+            if (n < 1000) return terbilang(Math.floor(n / 100)) + " ratus" + (n % 100 !== 0 ? " " + terbilang(n % 100) : "");
+            if (n < 2000) return "seribu" + (n % 1000 !== 0 ? " " + terbilang(n % 1000) : "");
+            if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " ribu" + (n % 1000 !== 0 ? " " + terbilang(n % 1000) : "");
+            return "";
+        }
+
+        function capitalizeSentence(str) {
+            if (!str) return "";
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('id-ID');
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(arr) {
+            const array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- Question Generators ---
+
+        // Category A: Reading Numbers (Membaca Bilangan)
+        function generateReadingQuestion() {
+            const isTextToNumber = Math.random() < 0.5;
+            const number = getRandomInt(100, 100000);
+            const textRepresentation = capitalizeSentence(terbilang(number));
+
+            if (isTextToNumber) {
+                // Given Words, Find Number
+                const wrongChoices = new Set();
+                while (wrongChoices.size < 3) {
+                    let delta = getRandomInt(-5, 5) * 1000;
+                    if (delta === 0) delta = getRandomInt(1, 9) * 10;
+                    let wrongNum = number + delta;
+                    if (wrongNum < 0 || wrongNum > 100000) wrongNum = getRandomInt(100, 100000);
+                    if (wrongNum !== number) {
+                        wrongChoices.add(formatNumber(wrongNum));
+                    }
+                }
+
+                const options = shuffleArray([formatNumber(number), ...Array.from(wrongChoices)]);
+
+                return {
+                    categoryBadge: "📖 Membaca Bilangan",
+                    prompt: "Pilihlah bentuk angka / lambang bilangan dari nama bilangan berikut:",
+                    target: `"${textRepresentation}"`,
+                    correctAnswer: formatNumber(number),
+                    options: options,
+                    explanation: `Membaca <b>"${textRepresentation}"</b> jika ditulis dalam bentuk lambang angka adalah <b>${formatNumber(number)}</b>.`
+                };
+            } else {
+                // Given Number, Find Words
+                const wrongChoices = new Set();
+                while (wrongChoices.size < 3) {
+                    let delta = getRandomInt(-5, 5) * (Math.random() > 0.5 ? 100 : 1000);
+                    let wrongNum = number + delta;
+                    if (wrongNum < 0 || wrongNum > 100000) wrongNum = getRandomInt(100, 100000);
+                    if (wrongNum !== number) {
+                        wrongChoices.add(capitalizeSentence(terbilang(wrongNum)));
+                    }
+                }
+
+                const options = shuffleArray([textRepresentation, ...Array.from(wrongChoices)]);
+
+                return {
+                    categoryBadge: "📖 Membaca Bilangan",
+                    prompt: "Bagaimana cara membaca / nama dari lambang bilangan di bawah ini?",
+                    target: formatNumber(number),
+                    correctAnswer: textRepresentation,
+                    options: options,
+                    explanation: `Bilangan <b>${formatNumber(number)}</b> dibaca <b>"${textRepresentation}"</b>.`
+                };
+            }
+        }
+
+        // Category B: Place Value & Digit Value (Nilai Tempat & Nilai Angka)
+        function generatePlaceValueQuestion() {
+            const number = getRandomInt(1000, 99999);
+            const numStr = number.toString();
+            const digitIndex = getRandomInt(0, numStr.length - 1);
+            const targetDigit = numStr[digitIndex];
+            const placeValues = ["Satuan", "Puluhan", "Ratusan", "Ribuan", "Puluh Ribuan"];
+            
+            // Map index from right to left
+            const placeIndex = numStr.length - 1 - digitIndex;
+            const correctPlace = placeValues[placeIndex];
+            const correctDigitValue = parseInt(targetDigit) * Math.pow(10, placeIndex);
+
+            const isPlaceValueType = Math.random() < 0.5;
+
+            if (isPlaceValueType) {
+                // Ask for Place Value Name (Puluh Ribuan, Ribuan, Ratusan, etc)
+                const options = shuffleArray(["Puluh Ribuan", "Ribuan", "Ratusan", "Puluhan", "Satuan"]).slice(0, 4);
+                if (!options.includes(correctPlace)) {
+                    options[0] = correctPlace;
+                }
+
+                return {
+                    categoryBadge: "🎯 Nilai Tempat",
+                    prompt: `Pada bilangan di bawah ini, menempati <b>nilai tempat</b> manakah angka <span class="text-rose-600 underline font-black">${targetDigit}</span>?`,
+                    target: formatNumberWithHighlight(numStr, digitIndex),
+                    correctAnswer: correctPlace,
+                    options: shuffleArray(options),
+                    explanation: `Pada bilangan <b>${formatNumber(number)}</b>, angka <b>${targetDigit}</b> berada di posisi urutan ke-${digitIndex + 1} dari kiri, yaitu menempati nilai tempat <b>${correctPlace}</b>.`
+                };
+            } else {
+                // Ask for Digit Value (Nilai Angka, e.g. 5.000)
+                const wrongValues = new Set();
+                const possiblePowers = [0, 1, 2, 3, 4];
+                
+                possiblePowers.forEach(pow => {
+                    const val = parseInt(targetDigit) * Math.pow(10, pow);
+                    if (val !== correctDigitValue && val <= 90000) {
+                        wrongValues.add(formatNumber(val));
+                    }
+                });
+
+                while(wrongValues.size < 3) {
+                    wrongValues.add(formatNumber(getRandomInt(1, 9) * 100));
+                }
+
+                const options = shuffleArray([formatNumber(correctDigitValue), ...Array.from(wrongValues).slice(0, 3)]);
+
+                return {
+                    categoryBadge: "🎯 Nilai Angka",
+                    prompt: `Berapakah <b>nilai angka</b> dari digit <span class="text-rose-600 underline font-black">${targetDigit}</span> pada bilangan berikut?`,
+                    target: formatNumberWithHighlight(numStr, digitIndex),
+                    correctAnswer: formatNumber(correctDigitValue),
+                    options: options,
+                    explanation: `Angka <b>${targetDigit}</b> menempati tempat <b>${correctPlace}</b>, sehingga nilai angkanya adalah <b>${formatNumber(correctDigitValue)}</b>.`
+                };
+            }
+        }
+
+        // Category C: Decomposition (Dekomposisi Bilangan)
+        function generateDecompositionQuestion() {
+            const number = getRandomInt(1000, 99999);
+            const numStr = number.toString();
+            
+            // Build expansion string: 40.000 + 5.000 + 200 + 10 + 8
+            const parts = [];
+            for (let i = 0; i < numStr.length; i++) {
+                const digit = parseInt(numStr[i]);
+                if (digit !== 0) {
+                    const placeValue = Math.pow(10, numStr.length - 1 - i);
+                    parts.push(formatNumber(digit * placeValue));
+                }
+            }
+            const correctExpansion = parts.join(" + ");
+
+            // Build distractor expansions
+            const wrongExpansions = new Set();
+            while (wrongExpansions.size < 3) {
+                const wrongParts = [...parts];
+                // Introduce a subtle mistake in one part
+                const idx = getRandomInt(0, wrongParts.length - 1);
+                let original = parseInt(wrongParts[idx].replace(/\./g, ''));
+                let modified = original > 10 ? original / 10 : original * 10;
+                wrongParts[idx] = formatNumber(modified);
+                
+                const candidate = wrongParts.join(" + ");
+                if (candidate !== correctExpansion) {
+                    wrongExpansions.add(candidate);
+                }
+            }
+
+            const options = shuffleArray([correctExpansion, ...Array.from(wrongExpansions)]);
+
+            return {
+                categoryBadge: "🧩 Dekomposisi Bilangan",
+                prompt: "Pilihlah <b>bentuk panjang (dekomposisi)</b> yang tepat untuk bilangan berikut:",
+                target: formatNumber(number),
+                correctAnswer: correctExpansion,
+                options: options,
+                explanation: `Bentuk panjang dari <b>${formatNumber(number)}</b> adalah hasil penjumlahan setiap nilai tempatnya: <b>${correctExpansion}</b>.`
+            };
+        }
+
+        function formatNumberWithHighlight(numStr, highlightIndex) {
+            let result = "";
+            let originalFormatted = formatNumber(parseInt(numStr));
+            
+            // Re-construct with bold red target digit
+            let currentDigitCount = 0;
+            for (let i = 0; i < originalFormatted.length; i++) {
+                let char = originalFormatted[i];
+                if (/\d/.test(char)) {
+                    if (currentDigitCount === highlightIndex) {
+                        result += `<span class="text-rose-600 underline font-black scale-110 inline-block">${char}</span>`;
+                    } else {
+                        result += char;
+                    }
+                    currentDigitCount++;
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        // --- Game Logic Controllers ---
+
+        function selectCategory(cat) {
+            playSound('click');
+            currentCategory = cat;
+            
+            // Update active tab UI styling
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            
+            const activeBtn = document.getElementById(`cat-${cat}`);
+            activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+
+            generateQuestion();
+        }
+
+        function generateQuestion() {
+            // Hide feedback box
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.classList.add('hidden');
+
+            // Pick question based on category
+            let type = currentCategory;
+            if (type === 'all') {
+                const types = ['reading', 'place_value', 'decomposition'];
+                type = types[Math.floor(Math.random() * types.length)];
+            }
+
+            if (type === 'reading') {
+                currentQuestionObj = generateReadingQuestion();
+            } else if (type === 'place_value') {
+                currentQuestionObj = generatePlaceValueQuestion();
+            } else if (type === 'decomposition') {
+                currentQuestionObj = generateDecompositionQuestion();
+            }
+
+            totalQuestions++;
+
+            // Render to DOM
+            document.getElementById('questionNumber').innerText = `Soal #${totalQuestions}`;
+            document.getElementById('questionCategoryBadge').innerText = currentQuestionObj.categoryBadge;
+            document.getElementById('questionPrompt').innerHTML = currentQuestionObj.prompt;
+            document.getElementById('targetDisplay').innerHTML = currentQuestionObj.target;
+
+            // Render Options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            currentQuestionObj.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-sm md:text-base hover:border-indigo-400 hover:bg-indigo-50/50 transition-all text-left flex items-center justify-between group shadow-sm`;
+                btn.onclick = () => handleAnswer(optText, btn);
+                btn.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-black group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            ${String.fromCharCode(65 + idx)}
+                        </span>
+                        <span>${optText}</span>
+                    </span>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-500">➔</span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update Progress Bar (Visual filler)
+            const progressPercent = (totalQuestions % 10) * 10;
+            document.getElementById('levelProgressBar').style.width = `${progressPercent === 0 ? 100 : progressPercent}%`;
+        }
+
+        function handleAnswer(selectedOption, selectedBtn) {
+            playSound('click');
+
+            // Disable all option buttons
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed', 'opacity-80');
+            });
+
+            const isCorrect = selectedOption === currentQuestionObj.correctAnswer;
+            const feedbackBox = document.getElementById('feedbackBox');
+            const feedbackIcon = document.getElementById('feedbackIcon');
+            const feedbackTitle = document.getElementById('feedbackTitle');
+            const feedbackText = document.getElementById('feedbackText');
+
+            feedbackBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200');
+
+            if (isCorrect) {
+                playSound('correct');
+                score += 10 + (streak * 2); // Bonus points for streak
+                streak++;
+                correctAnswers++;
+                if (streak > bestStreak) bestStreak = streak;
+
+                // Style option button
+                selectedBtn.classList.remove('bg-white', 'border-slate-200');
+                selectedBtn.classList.add('bg-emerald-500', 'border-emerald-600', 'text-white', '!opacity-100');
+
+                // Style feedback
+                feedbackBox.classList.add('bg-emerald-50', 'border-emerald-200');
+                feedbackIcon.innerText = '🎉';
+                feedbackTitle.className = 'font-bold text-base text-emerald-800';
+                feedbackTitle.innerText = 'Jawabanmu Tepat Sekali!';
+                feedbackText.innerHTML = currentQuestionObj.explanation;
+
+                triggerConfetti();
+            } else {
+                playSound('wrong');
+                streak = 0;
+
+                // Style clicked button wrong
+                selectedBtn.classList.remove('bg-white', 'border-slate-200');
+                selectedBtn.classList.add('bg-rose-500', 'border-rose-600', 'text-white', '!opacity-100');
+
+                // Highlight correct answer button
+                allBtns.forEach(btn => {
+                    if (btn.innerText.includes(currentQuestionObj.correctAnswer)) {
+                        btn.classList.remove('bg-white', 'border-slate-200');
+                        btn.classList.add('bg-emerald-100', 'border-emerald-400', 'text-emerald-900', '!opacity-100');
+                    }
+                });
+
+                // Style feedback
+                feedbackBox.classList.add('bg-rose-50', 'border-rose-200');
+                feedbackIcon.innerText = '💡';
+                feedbackTitle.className = 'font-bold text-base text-rose-800';
+                feedbackTitle.innerText = 'Kurang Tepat, Mari Pelajari!';
+                feedbackText.innerHTML = `${currentQuestionObj.explanation}`;
+            }
+
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            document.getElementById('headerScore').innerText = score;
+            document.getElementById('headerStreak').innerText = streak;
+            document.getElementById('statCorrect').innerText = correctAnswers;
+            document.getElementById('statTotal').innerText = totalQuestions;
+            document.getElementById('statBestStreak').innerText = bestStreak;
+
+            const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            document.getElementById('statAccuracy').innerText = accuracy;
+
+            // Badges title update based on score
+            const badgeEl = document.getElementById('userBadge');
+            if (score >= 200) {
+                badgeEl.innerText = '👑 Master Bilangan Cacah';
+                badgeEl.className = 'text-sm font-bold text-amber-600';
+            } else if (score >= 100) {
+                badgeEl.innerText = '🌟 Jagoan Puluh Ribuan';
+                badgeEl.className = 'text-sm font-bold text-purple-600';
+            } else if (score >= 50) {
+                badgeEl.innerText = '🚀 Pengembara Matematika';
+                badgeEl.className = 'text-sm font-bold text-blue-600';
+            } else {
+                badgeEl.innerText = '🌱 Pemula Matematika';
+                badgeEl.className = 'text-sm font-bold text-indigo-600';
+            }
+        }
+
+        // Pure Canvas Particle Confetti
+        function triggerConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+            for (let i = 0; i < 40; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.7) * 14,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let active = false;
+
+                particles.forEach(p => {
+                    if (p.life > 0) {
+                        active = true;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.3; // gravity
+                        p.life -= 0.02;
+
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                if (active) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        // Initialize App on window load
+        window.onload = function() {
+            generateQuestion();
+        };
+    </script>
+</body>
+</html>
